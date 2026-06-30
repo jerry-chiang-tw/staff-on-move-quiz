@@ -11,7 +11,7 @@ html, body { height: 100%; font-family: -apple-system, 'Helvetica Neue', Arial, 
 /* BACKGROUND PARALLAX */
 .bg-layer {
   position: fixed; inset: 0; z-index: 0;
-  background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?w=900&q=85');
+  background-image: url('images/bg-forest.jpg');
   background-size: 110%; background-position: center;
   filter: brightness(0.5);
   transform: scale(1.1);
@@ -42,9 +42,10 @@ html, body { height: 100%; font-family: -apple-system, 'Helvetica Neue', Arial, 
 /* LIQUID GLASS */
 .liquid-glass { position: relative; border-radius: 18px; overflow: hidden; }
 .liquid-glass .bg-copy {
-  position: absolute; inset: -60px;
-  background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?w=900&q=85');
+  position: absolute; inset: 0;
+  background-image: url('images/bg-forest.jpg');
   background-size: cover; background-position: center;
+  background-attachment: fixed;
   filter: url(#glass-refract) brightness(0.5);
   z-index: 0; pointer-events: none;
 }
@@ -133,9 +134,10 @@ html, body { height: 100%; font-family: -apple-system, 'Helvetica Neue', Arial, 
 @keyframes optSlideIn { from { opacity:0; transform: translateX(30px); } to { opacity:1; transform: translateX(0); } }
 
 .opt .bg-copy {
-  position: absolute; inset: -60px;
-  background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?w=900&q=85');
+  position: absolute; inset: 0;
+  background-image: url('images/bg-forest.jpg');
   background-size: cover; background-position: center;
+  background-attachment: fixed;
   filter: url(#glass-refract) brightness(0.5);
   z-index: 0; pointer-events: none; transition: filter 0.25s;
 }
@@ -181,9 +183,10 @@ html, body { height: 100%; font-family: -apple-system, 'Helvetica Neue', Arial, 
 .glass-card:nth-of-type(1) { animation-delay: 0.6s; }
 .glass-card:nth-of-type(2) { animation-delay: 0.75s; }
 .glass-card .bg-copy {
-  position: absolute; inset: -60px;
-  background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?w=900&q=85');
+  position: absolute; inset: 0;
+  background-image: url('images/bg-forest.jpg');
   background-size: cover; background-position: center;
+  background-attachment: fixed;
   filter: url(#glass-refract) brightness(0.42);
   z-index: 0; pointer-events: none;
 }
@@ -216,9 +219,10 @@ html, body { height: 100%; font-family: -apple-system, 'Helvetica Neue', Arial, 
 .btn-glass { position: relative; border-radius: 14px; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 0.18s; }
 .btn-glass:active { transform: scale(0.97); }
 .btn-glass .bg-copy {
-  position: absolute; inset: -40px;
-  background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?w=900&q=85');
+  position: absolute; inset: 0;
+  background-image: url('images/bg-forest.jpg');
   background-size: cover; background-position: center;
+  background-attachment: fixed;
   filter: url(#glass-refract) brightness(0.48);
   z-index: 0; pointer-events: none;
 }
@@ -252,6 +256,24 @@ html, body { height: 100%; font-family: -apple-system, 'Helvetica Neue', Arial, 
 /* RIPPLE */
 .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.25); transform: scale(0); animation: rippleAnim 0.5s linear; pointer-events: none; z-index: 99; }
 @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+/* iOS FALLBACK — background-attachment:fixed is unreliable on iOS Safari.
+   When body.ios is set, we drop "fixed" and instead increase blur so the
+   glass still reads as glass even though true pass-through isn't possible. */
+body.ios .liquid-glass .bg-copy,
+body.ios .opt .bg-copy,
+body.ios .glass-card .bg-copy,
+body.ios .btn-glass .bg-copy {
+  background-attachment: scroll;
+}
+body.ios .liquid-glass .glass-surface,
+body.ios .opt .glass-surface,
+body.ios .glass-card .glass-surface,
+body.ios .btn-glass .glass-surface {
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+body.ios .bg-layer { background-attachment: scroll; }
 </style>
 </head>
 <body>
@@ -378,6 +400,14 @@ html, body { height: 100%; font-family: -apple-system, 'Helvetica Neue', Arial, 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+// iOS DETECTION — background-attachment:fixed is unsupported/unreliable on
+// iOS Safari (incl. Chrome/Firefox on iOS, which use WebKit). Detect and
+// fall back to a heavier blur so it still looks intentional, not broken.
+(function() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isIOS) document.body.classList.add('ios');
+})();
 // PARALLAX
 window.addEventListener('scroll', () => {
   const y = window.scrollY;
